@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>my-project</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>1.21</maven.compiler.source> <!-- Замените 1.8 на нужную версию -->
+        <maven.compiler.target>1.21</maven.compiler.target> <!-- Замените 1.8 на нужную версию -->
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.32</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.32</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jsr166-mirror</groupId>
+            <artifactId>jsr166</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+    </dependencies>
+</project>
