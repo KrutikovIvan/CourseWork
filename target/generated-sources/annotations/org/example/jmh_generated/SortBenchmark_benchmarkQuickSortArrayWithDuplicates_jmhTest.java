@@ -331,6 +331,10 @@ public final class SortBenchmark_benchmarkQuickSortArrayWithDuplicates_jmhTest {
         SortBenchmark_jmhType val = f_sortbenchmark0_0;
         if (val == null) {
             val = new SortBenchmark_jmhType();
+                Field f;
+                f = org.example.SortBenchmark.class.getDeclaredField("arraySize");
+                f.setAccessible(true);
+                f.set(val, Integer.valueOf(control.getParam("arraySize")));
             val.setup();
             f_sortbenchmark0_0 = val;
         }
