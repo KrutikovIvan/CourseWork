@@ -9,22 +9,42 @@ public class SortAlgorithms {
     }
 
     private static void introSort(int[] array, int low, int high, int depthLimit) {
-        if (high - low < INSERTION_SORT_THRESHOLD) {
-            insertionSort(array, low, high);
-            return;
-        }
+        while (low < high) {
+            if (high - low < INSERTION_SORT_THRESHOLD) {
+                insertionSort(array, low, high);
+                return;
+            }
 
-        if (depthLimit == 0) {
-            heapSort(array, low, high);
-            return;
-        }
+            if (depthLimit == 0) {
+                heapSort(array, low, high);
+                return;
+            }
 
-        if (low < high) {
             int pivotIndex = partition(array, low, high);
-            introSort(array, low, pivotIndex - 1, depthLimit - 1);
-            introSort(array, pivotIndex + 1, high, depthLimit - 1);
+            if (pivotIndex - low < high - pivotIndex) {
+                introSort(array, low, pivotIndex - 1, depthLimit - 1);
+                low = pivotIndex + 1;
+            } else {
+                introSort(array, pivotIndex + 1, high, depthLimit - 1);
+                high = pivotIndex - 1;
+            }
         }
     }
+
+    private static int partition(int[] array, int low, int high) {
+        int pivot = array[high];
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (array[j] <= pivot) {
+                i++;
+                swap(array, i, j);
+            }
+        }
+        swap(array, i + 1, high);
+        return i + 1;
+    }
+
     public static void bubbleSort(int[] array) {
         boolean swapped;
         for (int i = 0; i < array.length - 1; i++) {
@@ -110,11 +130,11 @@ public class SortAlgorithms {
     public static void quickSort(int[] array) {
         quickSort(array, 0, array.length - 1);
     }
+
     private static void quickSort(int[] array, int low, int high) {
         while (low < high) {
             int pivotIndex = partition(array, low, high);
 
-            // Оптимизация: сортировать меньшую часть массива рекурсивно
             if (pivotIndex - low < high - pivotIndex) {
                 quickSort(array, low, pivotIndex - 1);
                 low = pivotIndex + 1;
@@ -123,20 +143,6 @@ public class SortAlgorithms {
                 high = pivotIndex - 1;
             }
         }
-    }
-
-    private static int partition(int[] array, int low, int high) {
-        int pivot = array[high];
-        int i = (low - 1);
-
-        for (int j = low; j < high; j++) {
-            if (array[j] <= pivot) {
-                i++;
-                swap(array, i, j);
-            }
-        }
-        swap(array, i + 1, high);
-        return i + 1;
     }
 
     private static void heapify(int[] array, int n, int i) {

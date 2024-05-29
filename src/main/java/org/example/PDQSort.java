@@ -38,14 +38,13 @@ public class PDQSort {
             int j = i - 1;
 
             if (array[j] > key) {
-                int tmp = key;
 
                 do {
                     array[j + 1] = array[j];
                     j--;
-                } while (j >= low && array[j] > tmp);
+                } while (j >= low && array[j] > key);
 
-                array[j + 1] = tmp;
+                array[j + 1] = key;
                 limit += i - (j + 1);
             }
 
@@ -78,32 +77,29 @@ public class PDQSort {
     }
 
     private static int log2(int n) {
-        int log = 0;
-        while (n > 1) {
-            n >>= 1;
-            log++;
-        }
-        return log;
+        return 31 - Integer.numberOfLeadingZeros(n);
     }
 
-    private static int medianOfThree(int[] array, int a, int b, int c) {
-        if (array[a] < array[b]) {
-            if (array[b] < array[c]) {
-                return b;
-            } else if (array[a] < array[c]) {
-                return c;
-            } else {
-                return a;
+    private static int partition(int[] array, int begin, int end) {
+        int pivot = array[begin];
+        int i = begin + 1;
+        int j = end - 1;
+
+        while (i <= j) {
+            while (i <= j && array[i] <= pivot) {
+                i++;
             }
-        } else {
-            if (array[a] < array[c]) {
-                return a;
-            } else if (array[b] < array[c]) {
-                return c;
-            } else {
-                return b;
+            while (i <= j && array[j] >= pivot) {
+                j--;
+            }
+            if (i < j) {
+                swap(array, i, j);
+                i++;
+                j--;
             }
         }
+        swap(array, begin, j);
+        return j;
     }
 
     private static void pdqSortLoop(int[] array, int begin, int end, int badAllowed, boolean leftmost) {
@@ -125,44 +121,88 @@ public class PDQSort {
                 sort3(array, begin + 1, begin + (s2 - 1), end - 2);
                 sort3(array, begin + 2, begin + (s2 + 1), end - 3);
                 sort3(array, begin + (s2 - 1), begin + s2, begin + (s2 + 1));
-                swap(array, begin, begin + s2);            } else {
+                swap(array, begin, begin + s2);
+            } else {
                 sort3(array, begin + s2, begin, end - 1);
             }
 
-            int pivot = array[begin];
-            int i = begin;
-            int j = end;
+            int pivotPos = partition(array, begin, end);
+            int lSize = pivotPos - begin;
+            int rSize = end - (pivotPos + 1);
+            boolean highlyUnbalanced = lSize < size / 8 || rSize < size / 8;
 
-            while (true) {
-                do {
-                    i++;
-                } while (array[i] < pivot);
-
-                do {
-                    j--;
-                } while (array[j] > pivot);
-
-                if (i >= j) {break;
+            if (highlyUnbalanced) {
+                if (--badAllowed == 0) {
+                    heapSort(array, begin, end);
+                    return;
                 }
 
-                swap(array, i, j);
-            }
+                if (lSize >= INSERTION_SORT_THRESHOLD) {
+                    swap(array, begin, begin + lSize / 4);
+                    swap(array, pivotPos - 1, pivotPos - lSize / 4);
 
-            swap(array, begin, j);
+                    if (lSize > NINTHER_THRESHOLD) {
+                        swap(array, begin + 1, begin + (lSize / 4 + 1));
+                        swap(array, begin + 2, begin + (lSize / 4 + 2));
+                        swap(array, pivotPos - 2, pivotPos - (lSize / 4 + 1));
+                        swap(array, pivotPos - 3, pivotPos - (lSize / 4 + 2));
+                    }
+                }
 
-            if (j - begin < end - (j + 1)) {
-                pdqSortLoop(array, begin, j, badAllowed, leftmost);
-                begin = j + 1;
+                if (rSize >= INSERTION_SORT_THRESHOLD) {
+                    swap(array, pivotPos + 1, pivotPos + (1 + rSize / 4));
+                    swap(array, end - 1, end - rSize / 4);
+
+                    if (rSize > NINTHER_THRESHOLD) {
+                        swap(array, pivotPos + 2, pivotPos + (2 + rSize / 4));
+                        swap(array, pivotPos + 3, pivotPos + (3 + rSize / 4));
+                        swap(array, end - 2, end - (1 + rSize / 4));
+                        swap(array, end - 3, end - (2 + rSize / 4));
+                    }
+                }
             } else {
-                pdqSortLoop(array, j + 1, end, badAllowed, false);
-                end = j;
+                if (partialInsertionSort(array, begin, pivotPos) && partialInsertionSort(array, pivotPos + 1, end - 1)) {
+                    return;
+                }
             }
 
-            if (badAllowed == 0) {
-                return;
+            if (pivotPos - begin < end - (pivotPos + 1)) {
+                pdqSortLoop(array, begin, pivotPos, badAllowed, leftmost);
+                begin = pivotPos + 1;
+                leftmost = false;
+            } else {
+                pdqSortLoop(array, pivotPos + 1, end, badAllowed, false);
+                end = pivotPos;
             }
+        }
+    }
 
-            badAllowed--;
+    private static void heapSort(int[] array, int begin, int end) {
+        for (int i = (end - begin) / 2 - 1 + begin; i >= begin; i--) {
+            heapify(array, end, i, begin);
+        }
+        for (int i = end - 1; i > begin; i--) {
+            swap(array, begin, i);
+            heapify(array, i, begin, begin);
+        }
+    }
+
+    private static void heapify(int[] array, int n, int i, int offset) {
+        int largest = i;
+        int left = 2 * (i - offset) + 1 + offset;
+        int right = 2 * (i - offset) + 2 + offset;
+
+        if (left < n && array[left] > array[largest]) {
+            largest = left;
+        }
+
+        if (right < n && array[right] > array[largest]) {
+            largest = right;
+        }
+
+        if (largest != i) {
+            swap(array, i, largest);
+            heapify(array, n, largest, offset);
         }
     }
 

@@ -9,11 +9,9 @@ public class Main {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(SortBenchmark.class.getSimpleName())
-                .forks(1) //6
-                .build(); // тесты запускать на 10000 100000 и 1000000
+                .forks(1)
+                .build();
 
         new Runner(opt).run();
     }
-
-
 }
